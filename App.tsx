@@ -1,20 +1,29 @@
+// App.tsx
+import 'react-native-get-random-values'; // must be first import for uuid
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { SavedJobsProvider } from './context/SavedJobsContext';
+import AppNavigator from './navigation/AppNavigation';
+
+// Inner component so it can access ThemeContext
+const InnerApp: React.FC = () => {
+  const { isDark } = useTheme();
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <AppNavigator />
+    </>
+  );
+};
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Hello tung sahur</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ThemeProvider>
+      <SavedJobsProvider>
+        <InnerApp />
+      </SavedJobsProvider>
+    </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
