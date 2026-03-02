@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -133,7 +134,7 @@ const SavedScreen: React.FC = () => {
   );
 
   return (
-    <View style={shared.screen}>
+    <SafeAreaView style={shared.screen} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View
         style={[
@@ -184,7 +185,7 @@ const SavedScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

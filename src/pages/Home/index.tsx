@@ -11,6 +11,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import uuid from 'react-native-uuid';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -154,16 +155,16 @@ const HomeScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <View style={[shared.centered, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[shared.centered, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
         <ActivityIndicator size="large" color={colors.accent} />
         <Text style={[shared.subtitle, { marginTop: 12 }]}>Loading jobs...</Text>
-      </View>
+      </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <View style={[shared.centered, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[shared.centered, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
         <Text style={{ fontSize: 40 }}>⚠️</Text>
         <Text style={[shared.title, { marginTop: 12, textAlign: 'center' }]}>
           Failed to Load Jobs
@@ -177,12 +178,12 @@ const HomeScreen: React.FC = () => {
         >
           <Text style={shared.accentButtonText}>Try Again</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={[shared.screen]}>
+    <SafeAreaView style={[shared.screen]} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
@@ -260,7 +261,7 @@ const HomeScreen: React.FC = () => {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
