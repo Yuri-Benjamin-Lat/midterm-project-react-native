@@ -4,9 +4,8 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
+  Pressable,
   Alert,
-  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -17,6 +16,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { getColors, makeStyles } from '../../context/theme';
 import { useSavedJobs } from '../../context/SavedJobsContext';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
+import styles from './styles';
 
 type SavedNav = NativeStackNavigationProp<RootStackParamList, 'Saved'>;
 
@@ -114,21 +114,29 @@ const SavedScreen: React.FC = () => {
 
       {/* Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[shared.dangerButton, styles.actionBtn]}
+        <Pressable
+          style={({ pressed }) => [
+            shared.dangerButton,
+            styles.actionBtn,
+            { opacity: pressed ? 0.7 : 1 },
+          ]}
           onPress={() => handleRemove(item)}
           accessibilityLabel="Remove from saved jobs"
         >
           <Text style={shared.dangerButtonText}>🗑 Remove</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity
-          style={[shared.accentButton, styles.actionBtn]}
+        <Pressable
+          style={({ pressed }) => [
+            shared.accentButton,
+            styles.actionBtn,
+            { opacity: pressed ? 0.7 : 1 },
+          ]}
           onPress={() => handleApply(item)}
           accessibilityLabel="Apply for this job"
         >
           <Text style={shared.accentButtonText}>Apply Now</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );
@@ -143,15 +151,19 @@ const SavedScreen: React.FC = () => {
         ]}
       >
         <View style={styles.headerLeft}>
-          <TouchableOpacity
+          <Pressable
             onPress={() => navigation.goBack()}
             style={styles.backBtn}
             accessibilityLabel="Go back"
           >
-            <Text style={{ color: colors.accent, fontSize: 16, fontWeight: '600' }}>
-              ← Back
-            </Text>
-          </TouchableOpacity>
+            {({ pressed }) => (
+              <Text
+                style={{ color: colors.accent, fontSize: 16, fontWeight: '600', opacity: pressed ? 0.6 : 1 }}
+              >
+                ← Back
+              </Text>
+            )}
+          </Pressable>
           <Text style={[shared.title, { fontSize: 22 }]}>Saved Jobs</Text>
           <Text style={[shared.subtitle]}>
             {savedJobs.length} {savedJobs.length === 1 ? 'job' : 'jobs'} saved
@@ -169,12 +181,16 @@ const SavedScreen: React.FC = () => {
           <Text style={[shared.emptyText]}>
             Save jobs from the Job Finder to view them here.
           </Text>
-          <TouchableOpacity
-            style={[shared.accentButton, { marginTop: 20, paddingHorizontal: 28 }]}
+          <Pressable
+            style={({ pressed }) => [
+              shared.accentButton,
+              styles.browseButton,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
             onPress={() => navigation.goBack()}
           >
             <Text style={shared.accentButtonText}>Browse Jobs</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       ) : (
         <FlatList
@@ -188,72 +204,5 @@ const SavedScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  backBtn: {
-    marginBottom: 6,
-  },
-  card: {
-    marginBottom: 4,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  cardHeaderText: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  jobTitle: {
-    fontSize: 17,
-    marginBottom: 2,
-  },
-  remoteBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
-    marginTop: 2,
-  },
-  remoteBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  location: {
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  salary: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 4,
-  },
-  actionBtn: {
-    flex: 1,
-  },
-  listContent: {
-    paddingTop: 8,
-    paddingBottom: 32,
-  },
-});
 
 export default SavedScreen;

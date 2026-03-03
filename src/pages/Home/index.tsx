@@ -6,10 +6,9 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
-  TouchableOpacity,
+  Pressable,
   RefreshControl,
   Alert,
-  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import uuid from 'react-native-uuid';
@@ -22,6 +21,7 @@ import { getColors, makeStyles } from '../../context/theme';
 import { useSavedJobs } from '../../context/SavedJobsContext';
 import JobCard from '../../components/JobCard';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
+import styles from './styles';
 
 type HomeNav = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -82,7 +82,6 @@ const HomeScreen: React.FC = () => {
 
       const data = await response.json();
 
-      // Handle different response shapes
       let rawJobs: RawJob[] = [];
       if (Array.isArray(data)) {
         rawJobs = data as RawJob[];
@@ -155,7 +154,10 @@ const HomeScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <SafeAreaView style={[shared.centered, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <SafeAreaView
+        style={[shared.centered, { backgroundColor: colors.background }]}
+        edges={['top', 'left', 'right']}
+      >
         <ActivityIndicator size="large" color={colors.accent} />
         <Text style={[shared.subtitle, { marginTop: 12 }]}>Loading jobs...</Text>
       </SafeAreaView>
@@ -164,20 +166,30 @@ const HomeScreen: React.FC = () => {
 
   if (error) {
     return (
-      <SafeAreaView style={[shared.centered, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      <SafeAreaView
+        style={[shared.centered, { backgroundColor: colors.background }]}
+        edges={['top', 'left', 'right']}
+      >
         <Text style={{ fontSize: 40 }}>⚠️</Text>
         <Text style={[shared.title, { marginTop: 12, textAlign: 'center' }]}>
           Failed to Load Jobs
         </Text>
-        <Text style={[shared.subtitle, { textAlign: 'center', marginTop: 8, paddingHorizontal: 24 }]}>
+        <Text
+          style={[shared.subtitle, { textAlign: 'center', marginTop: 8, paddingHorizontal: 24 }]}
+        >
           {error}
         </Text>
-        <TouchableOpacity
-          style={[shared.accentButton, { marginTop: 24, paddingHorizontal: 32 }]}
+        <Pressable
+          style={({ pressed }) => [
+            shared.accentButton,
+            styles.retryButton,
+            { opacity: pressed ? 0.7 : 1 },
+          ]}
           onPress={() => fetchJobs()}
+          accessibilityLabel="Try again"
         >
           <Text style={shared.accentButtonText}>Try Again</Text>
-        </TouchableOpacity>
+        </Pressable>
       </SafeAreaView>
     );
   }
@@ -185,7 +197,12 @@ const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={[shared.screen]} edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.header,
+          { backgroundColor: colors.headerBg, borderBottomColor: colors.border },
+        ]}
+      >
         <View style={styles.headerLeft}>
           <Text style={[shared.title, { fontSize: 24 }]}>Job Finder</Text>
           <Text style={[shared.subtitle]}>
@@ -194,13 +211,17 @@ const HomeScreen: React.FC = () => {
         </View>
         <View style={styles.headerRight}>
           <ThemeToggleButton />
-          <TouchableOpacity
-            style={[shared.accentButton, styles.savedButton]}
+          <Pressable
+            style={({ pressed }) => [
+              shared.accentButton,
+              styles.savedButton,
+              { opacity: pressed ? 0.7 : 1 },
+            ]}
             onPress={handleGoToSaved}
             accessibilityLabel="Go to saved jobs"
           >
             <Text style={shared.accentButtonText}>🔖 Saved</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -219,9 +240,22 @@ const HomeScreen: React.FC = () => {
           accessibilityLabel="Search jobs"
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')} accessibilityLabel="Clear search">
-            <Text style={{ fontSize: 18, color: colors.subText, paddingLeft: 4 }}>✕</Text>
-          </TouchableOpacity>
+          <Pressable
+            onPress={() => setSearchQuery('')}
+            accessibilityLabel="Clear search"
+            hitSlop={8}
+          >
+            {({ pressed }) => (
+              <Text
+                style={[
+                  styles.clearSearchText,
+                  { color: colors.subText, opacity: pressed ? 0.5 : 1 },
+                ]}
+              >
+                ✕
+              </Text>
+            )}
+          </Pressable>
         )}
       </View>
 
@@ -229,13 +263,22 @@ const HomeScreen: React.FC = () => {
       {filteredJobs.length === 0 ? (
         <View style={shared.emptyContainer}>
           <Text style={{ fontSize: 48 }}>🔎</Text>
-          <Text style={[shared.title, { marginTop: 12, textAlign: 'center' }]}>No Jobs Found</Text>
+          <Text style={[shared.title, styles.emptyTitle]}>No Jobs Found</Text>
           <Text style={[shared.emptyText]}>
             No results match "{searchQuery}". Try a different keyword.
           </Text>
-          <TouchableOpacity onPress={() => setSearchQuery('')} style={{ marginTop: 16 }}>
-            <Text style={{ color: colors.accent, fontWeight: '700', fontSize: 15 }}>Clear Search</Text>
-          </TouchableOpacity>
+          <Pressable onPress={() => setSearchQuery('')}>
+            {({ pressed }) => (
+              <Text
+                style={[
+                  styles.clearSearchLink,
+                  { color: colors.accent, opacity: pressed ? 0.6 : 1 },
+                ]}
+              >
+                Clear Search
+              </Text>
+            )}
+          </Pressable>
         </View>
       ) : (
         <FlatList
@@ -264,33 +307,5 @@ const HomeScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  savedButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  listContent: {
-    paddingTop: 8,
-    paddingBottom: 32,
-  },
-});
 
 export default HomeScreen;
