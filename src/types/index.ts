@@ -1,63 +1,10 @@
-// ─── Job Types ───────────────────────────────────────────────────────────────
+// types/index.ts
+// Central re-export — all existing imports from '../../types' keep working
+// without any changes. Import directly from the sub-files for clarity:
+//   import { Job } from '../types/job'
+//   import { ApplicationForm } from '../types/form'
+//   import { RootStackParamList } from '../types/navigation'
 
-export interface Job {
-  id: string; // uuid assigned on fetch
-  title: string;
-  companyName: string;
-  minSalary?: number | null;
-  maxSalary?: number | null;
-  salaryCurrency?: string;
-  salaryPeriod?: string;
-  jobType?: string;
-  location?: string;
-  remote?: boolean;
-  description?: string;
-  applyUrl?: string;
-  tags?: string[];
-  datePosted?: string;
-}
-
-// Raw shape returned by empllo API (no id field)
-export interface RawJob {
-  title?: string;
-  companyName?: string;
-  minSalary?: number | null;
-  maxSalary?: number | null;
-  salaryCurrency?: string;
-  salaryPeriod?: string;
-  jobType?: string;
-  location?: string;
-  remote?: boolean;
-  description?: string;
-  applyUrl?: string;
-  tags?: string[];
-  datePosted?: string;
-  [key: string]: unknown;
-}
-
-// ─── Application Form Types ───────────────────────────────────────────────────
-
-export interface ApplicationForm {
-  name: string;
-  email: string;
-  contactNumber: string;
-  whyHire: string;
-}
-
-export interface ApplicationFormErrors {
-  name?: string;
-  email?: string;
-  contactNumber?: string;
-  whyHire?: string;
-}
-
-// ─── Navigation Types ─────────────────────────────────────────────────────────
-
-export type RootStackParamList = {
-  Home: undefined;
-  Saved: undefined;
-  Form: {
-    job: Job;
-    fromSaved: boolean;
-  };
-};
+export * from './job';
+export * from './form';
+export * from './navigation';

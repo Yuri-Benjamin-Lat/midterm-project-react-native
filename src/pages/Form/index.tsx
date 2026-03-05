@@ -1,5 +1,5 @@
 // pages/Form/index.tsx
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -16,8 +16,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '../../types';
-import { useTheme } from '../../context/ThemeContext';
-import { getColors, makeStyles } from '../../context/theme';
+import { useAppStyles } from '../../hooks/useAppStyles';
 import { useJobForm } from '../../hooks/useJobForm';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
 import styles from './styles';
@@ -30,10 +29,7 @@ const FormScreen: React.FC = () => {
   const route = useRoute<FormRoute>();
   const { job, fromSaved } = route.params;
 
-  const { mode } = useTheme();
-  const colors = getColors(mode);
-  const shared = makeStyles(colors);
-
+  const { colors, shared } = useAppStyles();
   const {
     form,
     errors,
@@ -47,13 +43,13 @@ const FormScreen: React.FC = () => {
     handleSuccessOkay,
   } = useJobForm();
 
-  const onSuccessDone = () => {
+  const onSuccessDone = useCallback(() => {
     if (fromSaved) {
       navigation.navigate('Home');
     } else {
       navigation.goBack();
     }
-  };
+  }, [fromSaved, navigation]);
 
   return (
     <SafeAreaView

@@ -1,32 +1,31 @@
 // components/ThemeToggleButton.tsx
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ViewStyle,
-} from 'react-native';
+import { Pressable, Text, StyleSheet, ViewStyle } from 'react-native';
+
 import { useTheme } from '../context/ThemeContext';
-import { getColors } from '../context/theme';
+import { useAppStyles } from '../hooks/useAppStyles';
 
 interface Props {
   style?: ViewStyle;
 }
 
 const ThemeToggleButton: React.FC<Props> = ({ style }) => {
-  const { toggleTheme, isDark, mode } = useTheme();
-  const colors = getColors(mode);
+  const { toggleTheme, isDark } = useTheme();
+  const { colors } = useAppStyles();
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={toggleTheme}
-      style={[styles.button, { backgroundColor: colors.accent }, style]}
-      activeOpacity={0.8}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: colors.accent, opacity: pressed ? 0.7 : 1 },
+        style,
+      ]}
       accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       accessibilityRole="button"
     >
       <Text style={styles.icon}>{isDark ? '☀️' : '🌙'}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

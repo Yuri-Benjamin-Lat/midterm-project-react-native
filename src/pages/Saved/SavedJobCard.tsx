@@ -1,10 +1,9 @@
 // pages/Saved/SavedJobCard.tsx
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, Pressable } from 'react-native';
 
 import { Job } from '../../types';
-import { useTheme } from '../../context/ThemeContext';
-import { getColors, makeStyles } from '../../context/theme';
+import { useAppStyles } from '../../hooks/useAppStyles';
 import { formatSalary } from '../../utils/formatSalary';
 import styles from './styles';
 
@@ -14,10 +13,13 @@ interface Props {
   onApply: (job: Job) => void;
 }
 
-const SavedJobCard: React.FC<Props> = ({ job, onRemove, onApply }) => {
-  const { mode } = useTheme();
-  const colors = getColors(mode);
-  const shared = makeStyles(colors);
+/**
+ * Pure card component — only re-renders when the job data
+ * or action callbacks actually change.
+ * Wrap parent handlers in useCallback to get the full benefit.
+ */
+const SavedJobCard: React.FC<Props> = memo(({ job, onRemove, onApply }) => {
+  const { colors, shared } = useAppStyles();
 
   return (
     <View style={[shared.card, styles.card]}>
@@ -104,6 +106,8 @@ const SavedJobCard: React.FC<Props> = ({ job, onRemove, onApply }) => {
 
     </View>
   );
-};
+});
+
+SavedJobCard.displayName = 'SavedJobCard';
 
 export default SavedJobCard;

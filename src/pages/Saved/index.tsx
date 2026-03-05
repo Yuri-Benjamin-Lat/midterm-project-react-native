@@ -1,19 +1,12 @@
 // pages/Saved/index.tsx
-import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  Alert,
-} from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, FlatList, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Job, RootStackParamList } from '../../types';
-import { useTheme } from '../../context/ThemeContext';
-import { getColors, makeStyles } from '../../context/theme';
+import { useAppStyles } from '../../hooks/useAppStyles';
 import { useSavedJobs } from '../../context/SavedJobsContext';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
 import SavedJobCard from './SavedJobCard';
@@ -23,30 +16,24 @@ type SavedNav = NativeStackNavigationProp<RootStackParamList, 'Saved'>;
 
 const SavedScreen: React.FC = () => {
   const navigation = useNavigation<SavedNav>();
-  const { mode } = useTheme();
-  const colors = getColors(mode);
-  const shared = makeStyles(colors);
+  const { colors, shared } = useAppStyles();
   const { savedJobs, removeJob } = useSavedJobs();
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleRemove = (job: Job) => {
+  const handleRemove = useCallback((job: Job) => {
     Alert.alert(
       'Remove Job',
       `Remove "${job.title}" from saved jobs?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => removeJob(job.id),
-        },
+        { text: 'Remove', style: 'destructive', onPress: () => removeJob(job.id) },
       ],
     );
-  };
+  }, [removeJob]);
 
-  const handleApply = (job: Job) => {
+  const handleApply = useCallback((job: Job) => {
     navigation.navigate('Form', { job, fromSaved: true });
-  };
+  }, [navigation]);
 
   return (
     <SafeAreaView style={shared.screen} edges={['top', 'left', 'right']}>
@@ -107,8 +94,6 @@ const SavedScreen: React.FC = () => {
           </Pressable>
         </View>
       ) : (
-
-  
         <FlatList
           data={savedJobs}
           keyExtractor={(item) => item.id}

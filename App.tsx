@@ -7,16 +7,19 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from './src/context/ThemeContext';
 import { SavedJobsProvider } from './src/context/SavedJobsContext';
 import AppNavigator from './src/navigation/AppNavigation';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <SavedJobsProvider>
-          <StatusBar style="auto" />
-          <AppNavigator />
-        </SavedJobsProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <SavedJobsProvider>
+            <StatusBar style="auto" />
+            <AppNavigator />
+          </SavedJobsProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,5 +1,5 @@
 // pages/Home/index.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Job, RootStackParamList } from '../../types';
-import { useTheme } from '../../context/ThemeContext';
-import { getColors, makeStyles } from '../../context/theme';
+import { useAppStyles } from '../../hooks/useAppStyles';
 import { useSavedJobs } from '../../context/SavedJobsContext';
 import { useFetchJobs } from '../../hooks/useFetchJobs';
 import JobCard from '../../components/JobCard';
@@ -28,16 +27,10 @@ type HomeNav = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeNav>();
-  const { mode } = useTheme();
-  const colors = getColors(mode);
-  const shared = makeStyles(colors);
+  const { colors, shared } = useAppStyles();
   const { saveJob, isJobSaved } = useSavedJobs();
+  const { jobs, loading, refreshing, error, fetchJobs, onRefresh } = useFetchJobs();
 
-  // ── Data ──────────────────────────────────────────────────────────────────
-  const { jobs, loading, refreshing, error, fetchJobs, onRefresh } =
-    useFetchJobs();
-
-  // ── Local UI state ────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
@@ -56,15 +49,27 @@ const HomeScreen: React.FC = () => {
   }, [jobs, searchQuery]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleSave = (job: Job) => {
+  const handleSave = useCallback((job: Job) => {
     const result = saveJob(job);
     if (!result.success) Alert.alert('Already Saved', result.message);
-  };
+  }, [saveJob]);
 
-  const handleApply = (job: Job) => {
+  const handleApply = useCallback((job: Job) => {
     setSelectedJob(null);
     navigation.navigate('Form', { job, fromSaved: false });
-  };
+  }, [navigation]);
+
+  const handleCardPress = useCallback((job: Job) => {
+    setSelectedJob(job);
+  }, []);
+
+  const handleCloseOverlay = useCallback(() => {
+    setSelectedJob(null);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
 
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
@@ -163,7 +168,7 @@ const HomeScreen: React.FC = () => {
         />
         {searchQuery.length > 0 && (
           <Pressable
-            onPress={() => setSearchQuery('')}
+            onPress={handleClearSearch}
             accessibilityLabel="Clear search"
             hitSlop={8}
           >
@@ -189,7 +194,7 @@ const HomeScreen: React.FC = () => {
           <Text style={shared.emptyText}>
             No results match "{searchQuery}". Try a different keyword.
           </Text>
-          <Pressable onPress={() => setSearchQuery('')}>
+          <Pressable onPress={handleClearSearch}>
             {({ pressed }) => (
               <Text
                 style={[
@@ -208,7 +213,7 @@ const HomeScreen: React.FC = () => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <Pressable
-              onPress={() => setSelectedJob(item)}
+              onPress={() => handleCardPress(item)}
               accessibilityLabel={`View details for ${item.title}`}
               accessibilityRole="button"
             >
@@ -237,7 +242,7 @@ const HomeScreen: React.FC = () => {
       <JobDetailOverlay
         job={selectedJob}
         isSaved={selectedJob ? isJobSaved(selectedJob.id) : false}
-        onClose={() => setSelectedJob(null)}
+        onClose={handleCloseOverlay}
         onSave={handleSave}
         onApply={handleApply}
       />

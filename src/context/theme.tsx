@@ -1,59 +1,17 @@
 // context/theme.tsx
 import { StyleSheet } from 'react-native';
-import { ThemeMode } from './ThemeContext';
+import { AppColors } from './colors';
 
-// ─── Color Palettes ───────────────────────────────────────────────────────────
-
-export const LightColors = {
-  text: '#000000',
-  background: '#FFFFFF',
-  accent: '#F5C518',      // yellow
-  accentText: '#000000',  // text on yellow buttons
-  card: '#F8F8F8',
-  border: '#E0E0E0',
-  subText: '#666666',
-  error: '#D32F2F',
-  placeholder: '#999999',
-  tabBar: '#FFFFFF',
-  tabBarBorder: '#E0E0E0',
-  headerBg: '#FFFFFF',
-  searchBg: '#F0F0F0',
-  tagBg: '#EEEEEE',
-  tagText: '#444444',
-  successBg: '#E8F5E9',
-  successText: '#2E7D32',
-};
-
-export const DarkColors = {
-  text: '#FFFFFF',
-  background: '#000000',
-  accent: '#F5C518',      // yellow kept same
-  accentText: '#000000',  // text on yellow buttons
-  card: '#1A1A1A',
-  border: '#333333',
-  subText: '#AAAAAA',
-  error: '#EF9A9A',
-  placeholder: '#777777',
-  tabBar: '#111111',
-  tabBarBorder: '#333333',
-  headerBg: '#111111',
-  searchBg: '#1E1E1E',
-  tagBg: '#2A2A2A',
-  tagText: '#CCCCCC',
-  successBg: '#1B3A1F',
-  successText: '#81C784',
-};
-
-export type AppColors = typeof LightColors;
-
-export const getColors = (mode: ThemeMode): AppColors =>
-  mode === 'light' ? LightColors : DarkColors;
+// Re-export so all existing imports of getColors/AppColors/LightColors/DarkColors
+// from theme.tsx continue to work without any changes across the project.
+export { getColors, AppColors, LightColors, DarkColors } from './colors';
 
 // ─── Shared style factory ─────────────────────────────────────────────────────
 
 export const makeStyles = (colors: AppColors) =>
   StyleSheet.create({
-    // Layout
+
+    // ── Layout ───────────────────────────────────────────────────────────────
     flex1: { flex: 1 },
     screen: {
       flex: 1,
@@ -66,7 +24,7 @@ export const makeStyles = (colors: AppColors) =>
       backgroundColor: colors.background,
     },
 
-    // Typography
+    // ── Typography ───────────────────────────────────────────────────────────
     title: {
       fontSize: 22,
       fontWeight: '700',
@@ -97,7 +55,7 @@ export const makeStyles = (colors: AppColors) =>
       marginBottom: 6,
     },
 
-    // Cards
+    // ── Cards ────────────────────────────────────────────────────────────────
     card: {
       backgroundColor: colors.card,
       borderRadius: 12,
@@ -108,7 +66,7 @@ export const makeStyles = (colors: AppColors) =>
       borderColor: colors.border,
     },
 
-    // Buttons
+    // ── Buttons ──────────────────────────────────────────────────────────────
     accentButton: {
       backgroundColor: colors.accent,
       borderRadius: 8,
@@ -150,7 +108,7 @@ export const makeStyles = (colors: AppColors) =>
       fontSize: 14,
     },
 
-    // Form
+    // ── Form ─────────────────────────────────────────────────────────────────
     inputContainer: {
       marginBottom: 14,
     },
@@ -178,7 +136,7 @@ export const makeStyles = (colors: AppColors) =>
       textAlignVertical: 'top',
     },
 
-    // Search
+    // ── Search ───────────────────────────────────────────────────────────────
     searchContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -198,7 +156,7 @@ export const makeStyles = (colors: AppColors) =>
       marginLeft: 8,
     },
 
-    // Tags
+    // ── Tags ─────────────────────────────────────────────────────────────────
     tagContainer: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -216,14 +174,14 @@ export const makeStyles = (colors: AppColors) =>
       color: colors.tagText,
     },
 
-    // Divider
+    // ── Divider ──────────────────────────────────────────────────────────────
     divider: {
       height: 1,
       backgroundColor: colors.border,
       marginVertical: 10,
     },
 
-    // Empty state
+    // ── Empty state ───────────────────────────────────────────────────────────
     emptyContainer: {
       flex: 1,
       alignItems: 'center',

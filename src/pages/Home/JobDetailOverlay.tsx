@@ -1,16 +1,9 @@
 // pages/Home/JobDetailOverlay.tsx
 import React from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  ScrollView,
-  Pressable,
-} from 'react-native';
+import { View, Text, Modal, ScrollView, Pressable } from 'react-native';
 
 import { Job } from '../../types';
-import { useTheme } from '../../context/ThemeContext';
-import { getColors, makeStyles } from '../../context/theme';
+import { useAppStyles } from '../../hooks/useAppStyles';
 import { formatSalary } from '../../utils/formatSalary';
 import { stripHtml } from '../../utils/stripHtml';
 import styles from './styles';
@@ -30,9 +23,7 @@ const JobDetailOverlay: React.FC<Props> = ({
   onSave,
   onApply,
 }) => {
-  const { mode } = useTheme();
-  const colors = getColors(mode);
-  const shared = makeStyles(colors);
+  const { colors, shared } = useAppStyles();
 
   return (
     <Modal
@@ -41,10 +32,7 @@ const JobDetailOverlay: React.FC<Props> = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      {/* ── Dim backdrop — tap to close ─────────────────────────────────── */}
       <Pressable style={styles.modalBackdrop} onPress={onClose}>
-
-        {/* ── Sheet panel — absorbs taps so backdrop doesn't close ────────── */}
         <Pressable
           style={[
             styles.detailSheet,
@@ -52,10 +40,8 @@ const JobDetailOverlay: React.FC<Props> = ({
           ]}
           onPress={() => {}}
         >
-          {/* Drag handle */}
           <View style={[styles.dragHandle, { backgroundColor: colors.border }]} />
 
-          {/* Close button */}
           <Pressable
             style={[styles.closeBtn, { backgroundColor: colors.tagBg }]}
             onPress={onClose}
@@ -91,21 +77,13 @@ const JobDetailOverlay: React.FC<Props> = ({
                   <View
                     style={[
                       styles.badge,
-                      {
-                        backgroundColor: job.remote
-                          ? colors.accent
-                          : colors.tagBg,
-                      },
+                      { backgroundColor: job.remote ? colors.accent : colors.tagBg },
                     ]}
                   >
                     <Text
                       style={[
                         styles.badgeText,
-                        {
-                          color: job.remote
-                            ? colors.accentText
-                            : colors.tagText,
-                        },
+                        { color: job.remote ? colors.accentText : colors.tagText },
                       ]}
                     >
                       {job.remote ? '🌐 Remote' : '🏢 On-site'}
@@ -125,10 +103,7 @@ const JobDetailOverlay: React.FC<Props> = ({
               <View
                 style={[
                   styles.infoBox,
-                  {
-                    backgroundColor: colors.background,
-                    borderColor: colors.border,
-                  },
+                  { backgroundColor: colors.background, borderColor: colors.border },
                 ]}
               >
                 <View style={styles.infoRow}>
@@ -140,35 +115,20 @@ const JobDetailOverlay: React.FC<Props> = ({
                   </Text>
                 </View>
 
-                <View
-                  style={[
-                    styles.infoRowDivider,
-                    { backgroundColor: colors.border },
-                  ]}
-                />
+                <View style={[styles.infoRowDivider, { backgroundColor: colors.border }]} />
 
                 <View style={styles.infoRow}>
                   <Text style={[styles.infoLabel, { color: colors.subText }]}>
                     Salary
                   </Text>
-                  <Text
-                    style={[
-                      styles.infoValue,
-                      { color: colors.accent, fontWeight: '700' },
-                    ]}
-                  >
+                  <Text style={[styles.infoValue, { color: colors.accent, fontWeight: '700' }]}>
                     {formatSalary(job)}
                   </Text>
                 </View>
 
                 {job.datePosted && (
                   <>
-                    <View
-                      style={[
-                        styles.infoRowDivider,
-                        { backgroundColor: colors.border },
-                      ]}
-                    />
+                    <View style={[styles.infoRowDivider, { backgroundColor: colors.border }]} />
                     <View style={styles.infoRow}>
                       <Text style={[styles.infoLabel, { color: colors.subText }]}>
                         Posted
@@ -187,9 +147,7 @@ const JobDetailOverlay: React.FC<Props> = ({
                   <Text style={[styles.sectionHeading, { color: colors.text }]}>
                     About the Role
                   </Text>
-                  <Text
-                    style={[shared.bodyText, { color: colors.text, lineHeight: 22 }]}
-                  >
+                  <Text style={[shared.bodyText, { color: colors.text, lineHeight: 22 }]}>
                     {stripHtml(job.description)}
                   </Text>
                 </View>
@@ -203,10 +161,7 @@ const JobDetailOverlay: React.FC<Props> = ({
                   </Text>
                   <View style={shared.tagContainer}>
                     {job.tags.map((tag, idx) => (
-                      <View
-                        key={idx}
-                        style={[shared.tag, { backgroundColor: colors.tagBg }]}
-                      >
+                      <View key={idx} style={[shared.tag, { backgroundColor: colors.tagBg }]}>
                         <Text style={[shared.tagText, { color: colors.tagText }]}>
                           {tag}
                         </Text>
