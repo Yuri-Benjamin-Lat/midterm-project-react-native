@@ -1,5 +1,5 @@
 // pages/Form/index.tsx
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,66 +15,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { ApplicationForm, ApplicationFormErrors, RootStackParamList } from '../../types';
+import { RootStackParamList } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import { getColors, makeStyles } from '../../context/theme';
+import { useJobForm } from '../../hooks/useJobForm';
 import ThemeToggleButton from '../../components/ThemeToggleButton';
 import styles from './styles';
 
 type FormRoute = RouteProp<RootStackParamList, 'Form'>;
 type FormNav = NativeStackNavigationProp<RootStackParamList, 'Form'>;
-
-// ─── Validation ───────────────────────────────────────────────────────────────
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^[+]?[\d\s\-().]{7,20}$/;
-
-const validate = (form: ApplicationForm): ApplicationFormErrors => {
-  const errors: ApplicationFormErrors = {};
-
-  if (!form.name.trim()) {
-    errors.name = 'Full name is required.';
-  } else if (form.name.trim().length < 2) {
-    errors.name = 'Name must be at least 2 characters.';
-  } else if (form.name.trim().length > 100) {
-    errors.name = 'Name must be 100 characters or fewer.';
-  } else if (!/^[a-zA-Z\s'-]+$/.test(form.name.trim())) {
-    errors.name = 'Name may only contain letters, spaces, hyphens, and apostrophes.';
-  }
-
-  if (!form.email.trim()) {
-    errors.email = 'Email address is required.';
-  } else if (!EMAIL_REGEX.test(form.email.trim())) {
-    errors.email = 'Please enter a valid email address (e.g. user@email.com).';
-  } else if (form.email.trim().length > 254) {
-    errors.email = 'Email address is too long.';
-  }
-
-  if (!form.contactNumber.trim()) {
-    errors.contactNumber = 'Contact number is required.';
-  } else if (!PHONE_REGEX.test(form.contactNumber.trim())) {
-    errors.contactNumber = 'Enter a valid phone number (7–20 digits, may include +, spaces, dashes).';
-  }
-
-  if (!form.whyHire.trim()) {
-    errors.whyHire = 'Please tell us why we should hire you.';
-  } else if (form.whyHire.trim().length < 20) {
-    errors.whyHire = 'Please elaborate — minimum 20 characters.';
-  } else if (form.whyHire.trim().length > 1000) {
-    errors.whyHire = 'Response must be 1000 characters or fewer.';
-  }
-
-  return errors;
-};
-
-const EMPTY_FORM: ApplicationForm = {
-  name: '',
-  email: '',
-  contactNumber: '',
-  whyHire: '',
-};
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 const FormScreen: React.FC = () => {
   const navigation = useNavigation<FormNav>();
@@ -85,65 +34,26 @@ const FormScreen: React.FC = () => {
   const colors = getColors(mode);
   const shared = makeStyles(colors);
 
-  const [form, setForm] = useState<ApplicationForm>(EMPTY_FORM);
-  const [errors, setErrors] = useState<ApplicationFormErrors>({});
-  const [touched, setTouched] = useState<Record<keyof ApplicationForm, boolean>>({
-    name: false,
-    email: false,
-    contactNumber: false,
-    whyHire: false,
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [successVisible, setSuccessVisible] = useState(false);
+  const {
+    form,
+    errors,
+    touched,
+    submitting,
+    successVisible,
+    hasErrors,
+    updateField,
+    onBlur,
+    handleSubmit,
+    handleSuccessOkay,
+  } = useJobForm();
 
-  const updateField = useCallback(
-    (field: keyof ApplicationForm, value: string) => {
-      setForm((prev) => ({ ...prev, [field]: value }));
-      if (touched[field]) {
-        const next = { ...form, [field]: value };
-        const e = validate(next);
-        setErrors((prev) => ({ ...prev, [field]: e[field] }));
-      }
-    },
-    [form, touched],
-  );
-
-  const onBlur = useCallback(
-    (field: keyof ApplicationForm) => {
-      setTouched((prev) => ({ ...prev, [field]: true }));
-      const e = validate(form);
-      setErrors((prev) => ({ ...prev, [field]: e[field] }));
-    },
-    [form],
-  );
-
-  const handleSubmit = () => {
-    setTouched({ name: true, email: true, contactNumber: true, whyHire: true });
-    const errs = validate(form);
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
-
-    setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      setSuccessVisible(true);
-    }, 800);
-  };
-
-  const handleSuccessOkay = () => {
-    setSuccessVisible(false);
-    setForm(EMPTY_FORM);
-    setErrors({});
-    setTouched({ name: false, email: false, contactNumber: false, whyHire: false });
-
+  const onSuccessDone = () => {
     if (fromSaved) {
       navigation.navigate('Home');
     } else {
       navigation.goBack();
     }
   };
-
-  const hasErrors = Object.keys(validate(form)).length > 0;
 
   return (
     <SafeAreaView
@@ -154,7 +64,7 @@ const FormScreen: React.FC = () => {
         style={{ flex: 1, backgroundColor: colors.background }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Header */}
+        {/* ── Header ─────────────────────────────────────────────────────── */}
         <View
           style={[
             styles.header,
@@ -169,14 +79,19 @@ const FormScreen: React.FC = () => {
             >
               {({ pressed }) => (
                 <Text
-                  style={{ color: colors.accent, fontSize: 16, fontWeight: '600', opacity: pressed ? 0.6 : 1 }}
+                  style={{
+                    color: colors.accent,
+                    fontSize: 16,
+                    fontWeight: '600',
+                    opacity: pressed ? 0.6 : 1,
+                  }}
                 >
                   ← Back
                 </Text>
               )}
             </Pressable>
             <Text style={[shared.title, { fontSize: 20 }]}>Apply for Job</Text>
-            <Text style={[shared.subtitle]} numberOfLines={1}>
+            <Text style={shared.subtitle} numberOfLines={1}>
               {job.title} · {job.companyName}
             </Text>
           </View>
@@ -189,31 +104,37 @@ const FormScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Job Summary Banner */}
+          {/* ── Job Summary Banner ────────────────────────────────────────── */}
           <View
             style={[
               styles.jobBanner,
               { backgroundColor: colors.card, borderColor: colors.accent },
             ]}
           >
-            <Text style={[shared.bodyText, { fontWeight: '700' }]}>📋 {job.title}</Text>
-            <Text style={[shared.subtitle]}>🏢 {job.companyName}</Text>
+            <Text style={[shared.bodyText, { fontWeight: '700' }]}>
+              📋 {job.title}
+            </Text>
+            <Text style={shared.subtitle}>🏢 {job.companyName}</Text>
             {job.location ? (
-              <Text style={[shared.subtitle]}>📍 {job.location}</Text>
+              <Text style={shared.subtitle}>📍 {job.location}</Text>
             ) : null}
           </View>
 
-          {/* Form Title */}
           <Text style={[shared.title, styles.formTitle]}>Your Application</Text>
-          <Text style={[shared.subtitle, { marginBottom: 20 }]}>All fields are required.</Text>
+          <Text style={[shared.subtitle, { marginBottom: 20 }]}>
+            All fields are required.
+          </Text>
 
-          {/* Full Name */}
+          {/* ── Full Name ────────────────────────────────────────────────── */}
           <View style={shared.inputContainer}>
             <Text style={shared.inputLabel}>
               Full Name <Text style={{ color: colors.error }}>*</Text>
             </Text>
             <TextInput
-              style={[shared.input, touched.name && errors.name ? shared.inputError : null]}
+              style={[
+                shared.input,
+                touched.name && errors.name ? shared.inputError : null,
+              ]}
               placeholder="e.g. Juan dela Cruz"
               placeholderTextColor={colors.placeholder}
               value={form.name}
@@ -230,13 +151,16 @@ const FormScreen: React.FC = () => {
             ) : null}
           </View>
 
-          {/* Email */}
+          {/* ── Email ────────────────────────────────────────────────────── */}
           <View style={shared.inputContainer}>
             <Text style={shared.inputLabel}>
               Email Address <Text style={{ color: colors.error }}>*</Text>
             </Text>
             <TextInput
-              style={[shared.input, touched.email && errors.email ? shared.inputError : null]}
+              style={[
+                shared.input,
+                touched.email && errors.email ? shared.inputError : null,
+              ]}
               placeholder="e.g. juan@email.com"
               placeholderTextColor={colors.placeholder}
               value={form.email}
@@ -254,7 +178,7 @@ const FormScreen: React.FC = () => {
             ) : null}
           </View>
 
-          {/* Contact Number */}
+          {/* ── Contact Number ───────────────────────────────────────────── */}
           <View style={shared.inputContainer}>
             <Text style={shared.inputLabel}>
               Contact Number <Text style={{ color: colors.error }}>*</Text>
@@ -262,7 +186,9 @@ const FormScreen: React.FC = () => {
             <TextInput
               style={[
                 shared.input,
-                touched.contactNumber && errors.contactNumber ? shared.inputError : null,
+                touched.contactNumber && errors.contactNumber
+                  ? shared.inputError
+                  : null,
               ]}
               placeholder="e.g. +63 912 345 6789"
               placeholderTextColor={colors.placeholder}
@@ -280,10 +206,11 @@ const FormScreen: React.FC = () => {
             ) : null}
           </View>
 
-          {/* Why Hire */}
+          {/* ── Why Hire ─────────────────────────────────────────────────── */}
           <View style={shared.inputContainer}>
             <Text style={shared.inputLabel}>
-              Why should we hire you? <Text style={{ color: colors.error }}>*</Text>
+              Why should we hire you?{' '}
+              <Text style={{ color: colors.error }}>*</Text>
             </Text>
             <TextInput
               style={[
@@ -311,7 +238,12 @@ const FormScreen: React.FC = () => {
               <Text
                 style={[
                   styles.charCount,
-                  { color: form.whyHire.length > 950 ? colors.error : colors.placeholder },
+                  {
+                    color:
+                      form.whyHire.length > 950
+                        ? colors.error
+                        : colors.placeholder,
+                  },
                 ]}
               >
                 {form.whyHire.length}/1000
@@ -319,7 +251,7 @@ const FormScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Submit Button */}
+          {/* ── Submit ───────────────────────────────────────────────────── */}
           <Pressable
             style={({ pressed }) => [
               shared.accentButton,
@@ -339,7 +271,6 @@ const FormScreen: React.FC = () => {
             )}
           </Pressable>
 
-          {/* Hint */}
           {hasErrors && Object.values(touched).some(Boolean) && (
             <Text style={[shared.errorText, { textAlign: 'center', marginTop: 8 }]}>
               Please fix the errors above before submitting.
@@ -347,12 +278,12 @@ const FormScreen: React.FC = () => {
           )}
         </ScrollView>
 
-        {/* Success Modal */}
+        {/* ── Success Modal ───────────────────────────────────────────────── */}
         <Modal
           visible={successVisible}
           transparent
           animationType="fade"
-          onRequestClose={handleSuccessOkay}
+          onRequestClose={() => handleSuccessOkay(onSuccessDone)}
         >
           <View style={styles.modalOverlay}>
             <View
@@ -369,7 +300,10 @@ const FormScreen: React.FC = () => {
                 You applied for:
               </Text>
               <Text
-                style={[shared.bodyText, { textAlign: 'center', fontWeight: '700', marginBottom: 4 }]}
+                style={[
+                  shared.bodyText,
+                  { textAlign: 'center', fontWeight: '700', marginBottom: 4 },
+                ]}
               >
                 {job.title}
               </Text>
@@ -392,10 +326,12 @@ const FormScreen: React.FC = () => {
                   styles.okayBtn,
                   { opacity: pressed ? 0.7 : 1 },
                 ]}
-                onPress={handleSuccessOkay}
+                onPress={() => handleSuccessOkay(onSuccessDone)}
                 accessibilityLabel="Okay"
               >
-                <Text style={[shared.accentButtonText, { fontSize: 16 }]}>Okay</Text>
+                <Text style={[shared.accentButtonText, { fontSize: 16 }]}>
+                  Okay
+                </Text>
               </Pressable>
             </View>
           </View>
